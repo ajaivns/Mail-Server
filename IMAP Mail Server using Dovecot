@@ -1,0 +1,65 @@
+Install and Configure Dovecot -
+
+Pre-requirement
+OS : Linux/Ubentu (For below example)
+Package : Dovecot
+Dependencies :  dovecot-core and dovecot-imapd
+
+Install dovecot -
+#apt-get install dovecot
+
+configure dovecot – (Edit main configuration file)
+#vim /etc/dovecot/dovecot.conf
+Add below -
+protocols = imap pop3
+Configure Authentication –
+#/etc/dovecot/conf.d/10-auth.conf
+
+comment below -
+
+# !include auth-system.conf.ext
+
+uncomment below -
+
+!include auth-passwdfile.conf.ext
+ 
+Add below -
+
+1.: auth_mechanisms = plain login
+2.: disable_plaintext_auth = no
+Create user authentication file -
+
+/etc/dovecot/users
+
+#touch /etc/dovecot/users
+#chown root:dovecot users
+Add user authentication information -
+
+<user1>:{PLAIN}<password>:<userid>:<groupid>::/var/mail/<user1>
+
+ajai:{PLAIN}xxxxxxxx:1000:1000::/var/mail/ajai/Maildir/
+Change mail location directory -
+
+/etc/dovecot/conf.d/10-mail.conf
+
+Add below -
+mail_location = maildir:/var/mail/%u/Maildir
+
+Add user and dovecot in group -
+
+#usermod -a -G mail ajai
+#usermod -a -G mail dovecot
+Create/Change local mail dir -
+
+#mkdir -p /var/mail/ajai/Maildir
+#chown -R root:mail /var/mail/ajai/Maildir
+#chmod -R g+w /var/mail/ajai/Maildir
+
+Restart Dovecot -
+#/etc/init.d/dovecot restart
+
+Test your mail -
+#ls -la /var/mail/ajai/Maildir/   <<<<  some file must be here  >>>>>
+
+Note  : before restart dovecot, nothing in above directory.
+
