@@ -1,0 +1,142 @@
+Setup Local IMAP server
+
+Package Dovecot and OfflineIMAP is required to setup local imap.
+Install and Configure Dovecot -
+
+Pre-requirement
+OS : Linux/Ubentu (For below example)
+Package : Dovecot
+Dependencies :  dovecot-core and dovecot-imapd
+Install dovecot -
+#apt-get install dovecot
+configure dovecot – (Edit main configuration file)
+#vim /etc/dovecot/dovecot.conf
+Add below -
+protocols = imap pop3
+Configure Authentication –
+#/etc/dovecot/conf.d/10-auth.conf
+
+comment below -
+
+# !include auth-system.conf.ext
+
+uncomment below -
+
+!include auth-passwdfile.conf.ext
+ 
+Add below -
+
+1.: auth_mechanisms = plain login
+2.: disable_plaintext_auth = no
+Create user authentication file -
+
+/etc/dovecot/users
+
+#touch /etc/dovecot/users
+#chown root:dovecot users
+Add user authentication information -
+
+<user1>:{PLAIN}<password>:<userid>:<groupid>::/var/mail/<user1>
+
+ajai:{PLAIN}xxxxxxxx:1000:1000::/var/mail/ajai/Maildir/
+Change mail location directory -
+
+/etc/dovecot/conf.d/10-mail.conf
+
+Add below -
+mail_location = maildir:/var/mail/%u/Maildir
+
+Add user and dovecot in group -
+
+#usermod -a -G mail ajai
+#usermod -a -G mail dovecot
+Create/Change local mail dir -
+
+#mkdir -p /var/mail/ajai/Maildir
+#chown -R root:mail /var/mail/ajai/Maildir
+#chmod -R g+w /var/mail/ajai/Maildir
+
+Restart Dovecot -
+#/etc/init.d/dovecot restart
+
+Install and configure OfflineIMAP
+
+Pre-requirement
+OS : Linux/Ubentu (For below example)
+Packages : OfflineIMAP
+Dependencies : Python 2.2 or above (python-imaplib2)
+
+Install OfflineIMAP
+
+#apt-get install offlineimap
+
+Create offlineimap file (under user home dir)
+
+#vim /home/ajai/.offlineimaprc
+
+Add below -
+
+[general]
+accounts = Imap
+ 
+
+[Account Imap]
+localrepository = Local
+remoterepository = Remote
+
+
+
+[Repository Local]
+type = IMAP
+remotehost= 0.0.0.0
+remoteuser=ajai
+remotepass=xxxxxx
+ssl=no
+
+
+[Repository Remote]
+type=IMAP
+remotehost=mail.example.com
+remoteuser=ajai.test@example.com
+remotepass=xxxxxxx
+ssl=no
+folderfilter = lambda folder: folder not in ['Trash', 'Sent']
+
+
+Run offlineImap to sync mail -
+
+#offlineimap
+
+
+OfflineIMAP mail sync work flow -
+
+
+Remote IMAP server --> offlineimap --> maildir on localstorage --> local dovecot imap server --> webmail/mail client
+
+Automatic synchronization
+Create script file -
+
+#vim /home/ajai/offlineimap.sh
+
+Add below entry -
+
+#!/bin/bash
+
+if pgrep offlineimap; then pkill offlineimap; sleep 10s; fi
+
+/usr/bin/offlineimap quiet
+
+
+Make script executable -
+
+#chmod +x /home/ajai/offlineimap.sh
+
+
+
+Make cron entry -
+
+crontab -e
+
+*/5 * * * * /home/ajai/offlineimap.sh
+
+
