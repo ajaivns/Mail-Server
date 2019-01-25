@@ -1,0 +1,72 @@
+Setup a local mail server using Postfix
+
+Prerequisites:
+OS : Linux
+Version : 3.10.0-862.14.4.el7.x86_64
+IP : (0.0.0.0)   >> Static IP
+DNS : example.com  >> MX record added at ISP
+Package : Postfix
+HostName : localhost
+
+
+Step to Install -
+
+1. Install postfix
+#yum install postfix
+
+2. Configure postfix (Change below lines else add in bottom of the file)
+# vim /etc/postfix/main.cf
+
+## Line no 77 - Uncomment and set your mail server FQDN ##
+myhostname = server
+
+## Line 85 - Uncomment and Set domain name ##
+mydomain = example.com
+
+## Line 101 - Uncomment ##
+myorigin = $mydomain
+
+## Line 115 - Uncomment and Set ipv4 ##
+inet_interfaces = all
+
+## Line 121 - Change to all ##
+inet_protocols = all
+
+## Line 166 - Comment ##
+#mydestination = $myhostname, localhost.$mydomain, localhost,
+
+## Line 167 - Uncomment ##
+mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+
+## Line 266 - Uncomment and add IP range ##
+mynetworks = 0.0.0.0/24, 127.0.0.0/8
+
+## Line 421 - Uncomment ##
+home_mailbox = Maildir/
+
+<<<< Do above OR Add below in bottom of file >>>>
+
+myhostname =localhost.localdomain
+mydomain = example.com
+myorigin = $mydomain
+inet_interfaces = all
+mydestination = $myhostname, localhost, $mydomain
+mynetworks = 127.0.0.0/8, /24
+relay_domains = [smtp.mail.example.com]:587
+home_mailbox = Maildir/
+
+Save and Exit file.
+
+3. Restart postfix server.
+#systemctl restart postfix
+
+4. Enable postfix after restart
+#systemctl enable postfix
+
+5. Testing Postfix mail server
+#mail -s "test" ajaitest2020@gmail.com	<<< your personal mail ID for test >>>
+6. Varify after test
+#tail /var/log/maillog
+
+
+
